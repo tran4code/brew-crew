@@ -29,23 +29,5 @@ extension CoffeeShopEntity {
     @NSManaged public var photoReferences: [String]?
     @NSManaged public var createdAt: Date?
     @NSManaged public var updatedAt: Date?
-    @NSManaged public var visits: NSSet?
-    
-}
-
-// MARK: Generated accessors for visits
-extension CoffeeShopEntity {
-    
-    @objc(addVisitsObject:)
-    @NSManaged public func addToVisits(_ value: VisitEntity)
-    
-    @objc(removeVisitsObject:)
-    @NSManaged public func removeFromVisits(_ value: VisitEntity)
-    
-    @objc(addVisits:)
-    @NSManaged public func addToVisits(_ values: NSSet)
-    
-    @objc(removeVisits:)
-    @NSManaged public func removeFromVisits(_ values: NSSet)
     
 }

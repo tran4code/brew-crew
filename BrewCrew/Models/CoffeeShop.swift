@@ -45,6 +45,19 @@ struct CoffeeShop: Identifiable, Codable {
         self.rating = rating
     }
     
+    // Complete initializer with ID (for Core Data)
+    init(id: UUID, name: String, emoji: String, latitude: Double, longitude: Double, address: String, newnessBadge: String?, reviewCount: Int?, rating: Double?) {
+        self.id = id
+        self.name = name
+        self.emoji = emoji
+        self.latitude = latitude
+        self.longitude = longitude
+        self.address = address
+        self.newnessBadge = newnessBadge
+        self.reviewCount = reviewCount
+        self.rating = rating
+    }
+    
     var location: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
