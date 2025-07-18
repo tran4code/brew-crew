@@ -15,6 +15,8 @@ struct DatabaseSettingsView: View {
     @State private var selectedRadius: Double = 15000
     @State private var showClearAlert = false
     @State private var showPopulateAlert = false
+    @State private var showExportSuccess = false
+    @State private var exportedURL: URL?
     
     private let radiusOptions: [(String, Double)] = [
         ("5 km", 5000),
@@ -90,6 +92,17 @@ struct DatabaseSettingsView: View {
                 }
                 
                 Section {
+                    Button(action: exportDatabase) {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up.fill")
+                                .foregroundColor(DesignSystem.Colors.primary)
+                            Text("Export Database")
+                                .foregroundColor(DesignSystem.Colors.primary)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .disabled(databaseManager.coffeeShops.isEmpty)
+                    
                     Button(action: { showClearAlert = true }) {
                         HStack {
                             Image(systemName: "trash.fill")
@@ -100,7 +113,7 @@ struct DatabaseSettingsView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                 } footer: {
-                    Text("This will remove all coffee shops from your local database.")
+                    Text("Export saves the database to Documents folder. This file can be bundled with the app for pre-population.")
                         .font(DesignSystem.Typography.caption)
                 }
                 
@@ -143,6 +156,33 @@ struct DatabaseSettingsView: View {
         } message: {
             Text("Are you sure you want to remove all coffee shops from your local database?")
         }
+        .alert("Export Complete", isPresented: $showExportSuccess) {
+            Button("OK") {}
+            if let url = exportedURL {
+                Button("Share") {
+                    shareExportedDatabase(url: url)
+                }
+            }
+        } message: {
+            if let url = exportedURL {
+                Text("Database exported to: \(url.lastPathComponent)\n\nTo use as pre-populated data, add this file to your Xcode project.")
+            }
+        }
+    }
+    
+    private func exportDatabase() {
+        do {
+            exportedURL = try DatabaseExporter.saveExportToDocuments()
+            showExportSuccess = true
+        } catch {
+            databaseManager.errorMessage = "Export failed: \(error.localizedDescription)"
+        }
+    }
+    
+    private func shareExportedDatabase(url: URL) {
+        // This would open a share sheet on iOS
+        // For now, just print the location
+        print("Share database at: \(url)")
     }
 }
 

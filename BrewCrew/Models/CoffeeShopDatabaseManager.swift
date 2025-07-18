@@ -26,13 +26,34 @@ class CoffeeShopDatabaseManager: ObservableObject {
         container = NSPersistentContainer(name: "BrewCrew")
         placesService = CoffeeShopDiscoveryService()
         
+        // Check if we should use pre-populated database
+        setupPersistentStore()
+        
+        loadCoffeeShops()
+    }
+    
+    private func setupPersistentStore() {
+        let storeURL = NSPersistentContainer.defaultDirectoryURL()
+            .appendingPathComponent("BrewCrew.sqlite")
+        
+        // Check if store already exists
+        if !FileManager.default.fileExists(atPath: storeURL.path) {
+            // Try to copy pre-populated database from bundle
+            if let bundledDatabaseURL = Bundle.main.url(forResource: "BrewCrew-Prepopulated", withExtension: "sqlite") {
+                do {
+                    try FileManager.default.copyItem(at: bundledDatabaseURL, to: storeURL)
+                    print("Pre-populated database copied successfully")
+                } catch {
+                    print("Failed to copy pre-populated database: \(error)")
+                }
+            }
+        }
+        
         container.loadPersistentStores { _, error in
             if let error = error {
                 print("Core Data failed to load: \(error.localizedDescription)")
             }
         }
-        
-        loadCoffeeShops()
     }
     
     // MARK: - Public Methods
