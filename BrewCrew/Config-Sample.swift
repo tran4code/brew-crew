@@ -8,16 +8,16 @@
 
 import Foundation
 
-struct Config {
-    // Replace with your actual Google Places API key
-    // Get one at: https://console.cloud.google.com/apis/credentials
-    static let googlePlacesAPIKey = "YOUR_GOOGLE_PLACES_API_KEY_HERE"
-    
-    // Development settings
-    static let useMockData = false // Set to false when using real API
-    static let discoveryRadius = 15000 // meters (15km to cover Triangle area)
-    static let maxCoffeeShopsToShow = 20
-}
+//struct Config {
+//    // Replace with your actual Google Places API key
+//    // Get one at: https://console.cloud.google.com/apis/credentials
+//    static let googlePlacesAPIKey = "YOUR_GOOGLE_PLACES_API_KEY_HERE"
+//    
+//    // Development settings
+//    static let useMockData = false // Set to false when using real API
+//    static let discoveryRadius = 15000 // meters (15km to cover Triangle area)
+//    static let maxCoffeeShopsToShow = 20
+//}
 
 // MARK: - Instructions for getting Google Places API Key
 /*

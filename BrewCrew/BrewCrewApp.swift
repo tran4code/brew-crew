@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct BrewCrewApp: App {
+    @StateObject private var databaseManager = CoffeeShopDatabaseManager.shared
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(databaseManager)
         }
     }
 }

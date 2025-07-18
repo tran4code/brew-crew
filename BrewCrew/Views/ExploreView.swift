@@ -9,7 +9,7 @@ import SwiftUI
 import MapKit
 
 struct ExploreView: View {
-    @State private var coffeeShops = CoffeeShop.sampleShops
+    @EnvironmentObject var databaseManager: CoffeeShopDatabaseManager
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 35.7796, longitude: -78.6382), // Raleigh, NC
         span: MKCoordinateSpan(latitudeDelta: 0.3, longitudeDelta: 0.3) // Wider view to show Triangle area
@@ -17,6 +17,8 @@ struct ExploreView: View {
     @State private var selectedShop: CoffeeShop?
     @State private var showListView = false
     @State private var mapStyle = 0
+    @State private var showPopulateAlert = false
+    @State private var showSettings = false
     
     var body: some View {
         NavigationView {
@@ -27,7 +29,7 @@ struct ExploreView: View {
                 VStack(spacing: 0) {
                     ModernMapView(
                         region: $region,
-                        coffeeShops: coffeeShops,
+                        coffeeShops: databaseManager.coffeeShops,
                         selectedShop: $selectedShop,
                         mapStyle: mapStyle
                     )
@@ -37,13 +39,17 @@ struct ExploreView: View {
                         MapControlsView(
                             showListView: $showListView,
                             mapStyle: $mapStyle,
-                            coffeeShopCount: coffeeShops.count
+                            coffeeShopCount: databaseManager.coffeeShops.count,
+                            onPopulate: {
+                                showPopulateAlert = true
+                            },
+                            isLoading: databaseManager.isLoading
                         )
                         
                         if showListView {
                             ScrollView {
                                 LazyVStack(spacing: DesignSystem.Spacing.sm) {
-                                    ForEach(coffeeShops) { shop in
+                                    ForEach(databaseManager.coffeeShops) { shop in
                                         ModernCoffeeShopCard(
                                             shop: shop,
                                             isSelected: selectedShop?.id == shop.id
@@ -88,6 +94,42 @@ struct ExploreView: View {
                 }
             }
             .navigationBarHidden(true)
+        }
+        .alert("Populate Database", isPresented: $showPopulateAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Populate") {
+                Task {
+                    await databaseManager.populateDatabase(
+                        around: region.center,
+                        radius: 15000
+                    )
+                }
+            }
+        } message: {
+            Text("This will fetch all coffee shops and bakeries within 15km and save them to your local database. This may take a moment.")
+        }
+        .sheet(isPresented: $showSettings) {
+            DatabaseSettingsView()
+                .environmentObject(databaseManager)
+        }
+        .overlay(alignment: .topTrailing) {
+            Button(action: { showSettings = true }) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(DesignSystem.Colors.primary)
+                    .padding(DesignSystem.Spacing.md)
+                    .background(
+                        Circle()
+                            .fill(DesignSystem.Colors.cardBackground)
+                            .shadow(
+                                color: DesignSystem.Colors.cardShadow,
+                                radius: 4,
+                                x: 0,
+                                y: 2
+                            )
+                    )
+            }
+            .padding(DesignSystem.Spacing.md)
         }
     }
 }
@@ -238,6 +280,8 @@ struct MapControlsView: View {
     @Binding var showListView: Bool
     @Binding var mapStyle: Int
     let coffeeShopCount: Int
+    let onPopulate: () -> Void
+    let isLoading: Bool
     
     var body: some View {
         VStack(spacing: 0) {
@@ -273,6 +317,20 @@ struct MapControlsView: View {
                 }
                 
                 Spacer()
+                
+                Button(action: onPopulate) {
+                    if isLoading {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                            .progressViewStyle(CircularProgressViewStyle(tint: DesignSystem.Colors.primary))
+                    } else {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(DesignSystem.Colors.primary)
+                    }
+                }
+                .disabled(isLoading)
+                .padding(.horizontal, DesignSystem.Spacing.sm)
                 
                 Picker("Map Style", selection: $mapStyle) {
                     Image(systemName: "map").tag(0)
