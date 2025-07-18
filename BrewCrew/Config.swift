@@ -8,9 +8,18 @@
 import Foundation
 
 struct Config {
-    // Replace with your actual Google Places API key
-    // Get one at: https://console.cloud.google.com/apis/credentials
-    static let googlePlacesAPIKey = "AIzaSyBKXg-q4Yjut3cvUzc-HdF85DjpuLCuQLc"
+    // API key loaded from APIKeys.plist (not committed to git)
+    static let googlePlacesAPIKey: String = {
+        guard let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
+              let dict = NSDictionary(contentsOfFile: path),
+              let apiKey = dict["GooglePlacesAPIKey"] as? String,
+              apiKey != "YOUR_GOOGLE_PLACES_API_KEY_HERE" else {
+            print("⚠️ WARNING: Google Places API key not found in APIKeys.plist")
+            print("Please add your API key to APIKeys.plist")
+            return ""
+        }
+        return apiKey
+    }()
     
     // Development settings
     static let useMockData = false // Set to false when using real API
